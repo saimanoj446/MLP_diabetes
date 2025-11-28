@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background-color: #f4f4f9; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 350px; }
+        h2 { text-align: center; color: #333; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #218838; }
+        #result { margin-top: 20px; text-align: center; font-weight: bold; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Diabetes Type Classification</h2>
+        
+        <label>Age</label>
+        <input type="number" id="age" required>
+
+        <label>Blood Sugar Level (Glucose)</label>
+        <input type="number" id="glucose" required>
+
+        <label>Insulin Level</label>
+        <input type="number" id="insulin" required>
+
+        <label>BMI</label>
+        <input type="number" id="bmi" step="0.1" required>
+
+        <label>Select Model</label>
+        <select id="model_type">
+            <option value="naive_bayes">Gaussian Naive Bayes</option>
+            <option value="perceptron">Perceptron (MLP)</option>
+        </select>
+
+        <button onclick="predict()">Submit</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function predict() {
+            const data = {
+                age: document.getElementById('age').value,
+                glucose: document.getElementById('glucose').value,
+                insulin: document.getElementById('insulin').value,
+                bmi: document.getElementById('bmi').value,
+                model_type: document.getElementById('model_type').value
+            };
+
+            if(!data.age || !data.glucose || !data.insulin || !data.bmi) {
+                alert("Please fill all fields");
+                return;
+            }
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            
+            const resultDiv = document.getElementById('result');
+            if (result.error) {
+                resultDiv.style.color = "red";
+                resultDiv.innerText = result.error;
+            } else {
+                resultDiv.style.color = result.raw_prediction === 1 ? "red" : "green";
+                resultDiv.innerText = "Prediction: " + result.diabetes_type;
+            }
+        }
+    </script>
+</body>
+</html>
